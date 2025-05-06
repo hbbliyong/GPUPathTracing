@@ -5,4 +5,5 @@ project(
     LANGUAGES CXX
 )
 
+add_subdirectory(thirdparty/glm)
 add_subdirectory(source)
