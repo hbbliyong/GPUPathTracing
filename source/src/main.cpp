@@ -13,18 +13,17 @@ public:
 
 int main()
 {
-	Film film(1280, 768);
-	for (size_t i = 0; i < 200; i++)
-	{
-		for (size_t j = 0; j < 200; j++)
-		{
-			film.ssetPixel(i, j, {0.1, 0.2, 0.3});
-		}
-	}
-	film.save("test.ppm");
-	glm::vec3 test = {1, 2, 3};
-	std::cout << "hello world" << test.x << test.y << test.z << std::endl;
 	ThreadPool thread_pool{};
+	Film film(1280, 768);
+	thread_pool.parallelFor(200, 100, [&](size_t x, size_t y)
+		{
+			film.setPixel(x, y, { 0.5, 0.7, 0.2 });
+		});
+	thread_pool.wait();
+	film.save("test.ppm");
+	glm::vec3 test = { 1, 2, 3 };
+	std::cout << "hello world" << test.x << test.y << test.z << std::endl;
+
 	thread_pool.addTask(new SimpleTask());
 	thread_pool.addTask(new SimpleTask());
 	thread_pool.addTask(new SimpleTask());

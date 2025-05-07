@@ -1,8 +1,10 @@
 #include "thread_pool.hpp"
-
+/**
+ * 目前只支持主线程添加任务，如果是支持多线程添加任务，需要用两个锁来实现
+ */
 ThreadPool::ThreadPool(size_t thread_count)
 {
-	mAlive = true;
+	mAlive = 1;
 	if (thread_count == 0)
 	{
 		thread_count = std::thread::hardware_concurrency();
@@ -16,48 +18,85 @@ ThreadPool::ThreadPool(size_t thread_count)
 
 ThreadPool::~ThreadPool()
 {
-	while (!mTasks.empty())
-	{
-		std::this_thread::yield();
-	}
-	mAlive = false;
-	for (auto& thread : mThreads)
+	wait();
+
+	mAlive = 0;
+	for (auto &thread : mThreads)
 	{
 		thread.join();
 	}
 	mThreads.clear();
 }
 
-void ThreadPool::WorkThread(ThreadPool* master)
+void ThreadPool::WorkThread(ThreadPool *master)
 {
 	if (master)
 	{
-		while (master->mAlive)
+		while (master->mAlive == 1)
 		{
-			Task* task = master->getTask();
+			Task *task = master->getTask();
 			if (task)
 			{
 				task->run();
-			}else{
+			}
+			else
+			{
 				std::this_thread::yield();
 			}
 		}
 	}
 }
 
-void ThreadPool::addTask(Task* task)
+void ThreadPool::addTask(Task *task)
 {
-	std::lock_guard<std::mutex> guard(mLock);
+	Guard guard(mLock);
 	mTasks.push_back(task);
 }
-Task* ThreadPool::getTask()
+Task *ThreadPool::getTask()
 {
-	std::lock_guard<std::mutex> guard(mLock);
+	Guard guard(mLock);
 	if (mTasks.empty())
 	{
 		return nullptr;
 	}
-	Task* task = mTasks.front();
+	Task *task = mTasks.front();
 	mTasks.pop_front();
 	return task;
+}
+
+class ParallelForTask : public Task
+{
+public:
+	ParallelForTask(size_t x, size_t y, const std::function<void(size_t, size_t)> &lambda)
+		: mX(x), mY(y), mLambda(lambda) {}
+
+	void run() override
+	{
+		mLambda(mX, mY);
+	}
+
+private:
+	size_t mX, mY;
+	std::function<void(size_t, size_t)> mLambda;
+};
+
+void ThreadPool::parallelFor(size_t width, size_t height, const std::function<void(size_t, size_t)> &lambda)
+{
+	Guard guard(mLock);
+
+	for (size_t i = 0; i < width; i++)
+	{
+		for (size_t j = 0; j < height; j++)
+		{
+			mTasks.push_back(new ParallelForTask(i, j, lambda));
+		}
+	}
+}
+
+void ThreadPool::wait() const
+{
+	while (!mTasks.empty())
+	{
+		std::this_thread::yield();
+	}
 }
