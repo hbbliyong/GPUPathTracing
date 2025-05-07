@@ -38,6 +38,8 @@ void ThreadPool::WorkThread(ThreadPool* master)
 			if (task)
 			{
 				task->run();
+			}else{
+				std::this_thread::yield();
 			}
 		}
 	}
