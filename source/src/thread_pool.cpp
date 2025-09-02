@@ -50,7 +50,7 @@ void ThreadPool::WorkThread(ThreadPool *master)
 void ThreadPool::addTask(Task *task)
 {
 	Guard guard(mLock);
-	mTasks.push_back(task);
+	mTasks.push(task);
 }
 Task *ThreadPool::getTask()
 {
@@ -60,7 +60,7 @@ Task *ThreadPool::getTask()
 		return nullptr;
 	}
 	Task *task = mTasks.front();
-	mTasks.pop_front();
+	mTasks.pop();
 	return task;
 }
 
@@ -88,7 +88,7 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
 	{
 		for (size_t j = 0; j < height; j++)
 		{
-			mTasks.push_back(new ParallelForTask(i, j, lambda));
+			mTasks.push(new ParallelForTask(i, j, lambda));
 		}
 	}
 }

@@ -6,5 +6,6 @@ file(GLOB_RECURSE SOURCE_FILES CONFIG_DEPENDS src/*.c*)
 add_executable(${LIBRARY_NAME} ${HEADER_FILES} ${SOURCE_FILES})
 
 target_include_directories(${LIBRARY_NAME} PUBLIC include)
+target_compile_definitions(${LIBRARY_NAME} PUBLIC GLM_FORCE_DEPTH_ZERO_TO_ONE GLM_FORCE_LEFT_HANDED GLM_FORCE_RADIANS)
 
 target_link_libraries(${LIBRARY_NAME} PRIVATE glm)

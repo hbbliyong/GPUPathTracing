@@ -9,15 +9,15 @@ public:
     Film(size_t width, size_t height);
     void save(const std::filesystem::path &fileName);
 
-    size_t getWidth() const { return mWidth; }
-    size_t getHeight() const { return mHeight; }
-    glm::vec3 getPixel(size_t x, size_t y) { return mPixels[y * mWidth + x]; }
+    size_t getWidth() const { return width; }
+    size_t getHeight() const { return height; }
+    glm::vec3 getPixel(size_t x, size_t y) { return pixels[y * width + x]; }
     void setPixel(size_t x, size_t y, const glm::vec3 &color) 
     { 
-        mPixels[y * mWidth + x] = color; 
+        pixels[y * width + x] = color; 
     }
 
 private:
-    size_t mWidth, mHeight;
-    std::vector<glm::vec3> mPixels;
+    size_t width, height;
+    std::vector<glm::vec3> pixels;
 };

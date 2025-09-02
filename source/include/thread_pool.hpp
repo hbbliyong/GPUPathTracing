@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <thread>
-#include <list>
+#include <queue>
 #include <mutex>
 #include <functional>
 
@@ -28,7 +28,7 @@ public:
 
 private:
 	std::vector<std::thread> mThreads;
-	std::list<Task *> mTasks;
+	std::queue<Task *> mTasks;
 	SpinLock mLock{};
 	std::atomic<int> mAlive;
 };
