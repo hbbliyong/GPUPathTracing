@@ -29,6 +29,7 @@ public:
 private:
 	std::vector<std::thread> mThreads;
 	std::queue<Task *> mTasks;
+	std::atomic<int> pending_task_count{ 0 };
 	SpinLock mLock{};
 	std::atomic<int> mAlive;
 };

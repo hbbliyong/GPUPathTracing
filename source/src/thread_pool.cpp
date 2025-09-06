@@ -5,6 +5,8 @@
 ThreadPool::ThreadPool(size_t thread_count)
 {
 	mAlive = 1;
+	pending_task_count = 0;
+
 	if (thread_count == 0)
 	{
 		thread_count = std::thread::hardware_concurrency();
@@ -38,6 +40,7 @@ void ThreadPool::WorkThread(ThreadPool *master)
 			if (task)
 			{
 				task->run();
+				master->pending_task_count--;
 			}
 			else
 			{
@@ -50,6 +53,7 @@ void ThreadPool::WorkThread(ThreadPool *master)
 void ThreadPool::addTask(Task *task)
 {
 	Guard guard(mLock);
+		pending_task_count++;
 	mTasks.push(task);
 }
 Task *ThreadPool::getTask()
@@ -88,6 +92,7 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
 	{
 		for (size_t j = 0; j < height; j++)
 		{
+			pending_task_count++;
 			mTasks.push(new ParallelForTask(i, j, lambda));
 		}
 	}
@@ -95,7 +100,7 @@ void ThreadPool::parallelFor(size_t width, size_t height, const std::function<vo
 
 void ThreadPool::wait() const
 {
-	while (!mTasks.empty())
+	while (pending_task_count > 0)
 	{
 		std::this_thread::yield();
 	}

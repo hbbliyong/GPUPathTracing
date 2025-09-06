@@ -1,11 +1,13 @@
 #pragma once
 
-#include "ray.hpp"
-#include <optional>
+#include "shape.hpp"
 
-struct Sphere
+
+struct Sphere:public Shape
 {
   glm::vec3 center; // Sphere center
   float radius;     // Sphere radius
-  std::optional<float> intersect(const Ray &ray) const;
+  
+  Sphere(const glm::vec3& cen, float r) : center(cen), radius(r) {}
+  virtual std::optional<HitInfo> intersect(const Ray &ray,float t_min,float t_max) const override;
 };
